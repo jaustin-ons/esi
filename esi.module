@@ -272,7 +272,7 @@ function esi_get_components() {
         $components[$key] = $component;
       }
     }
-    drupal_alter('esi_component_info', $esi_component_info);
+    drupal_alter('esi_component_info', $components);
     cache_set('esi_component_info', $components);
     return $components;
   }
