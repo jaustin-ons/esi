@@ -54,6 +54,9 @@ define('ESI_SEED_ROTATION_INTERVAL', 86400);
 // By default, user context-cookies are hardened.
 define('ESI_DEFAULT_CONTEXT_COOKIES_HARDENING', TRUE);
 
+// When ESI sets cookies, prefix the cookie name with 'ESI_' by default.
+define('ESI_DEFAULT_COOKIE_NAME_PREFIX', 'ESI_');
+
 /**
  * Implements hook_flush_caches().
  */
@@ -357,13 +360,18 @@ function esi__get_cookie_data($account) {
 
   // Allow other modules to generate context for this user.
   $contexts = esi__get_user_contexts($account);
+
+  // Use the same path/domain/secure/httponly params as the main site config.
   $params = session_get_cookie_params();
   $expire = $params['lifetime'] ? REQUEST_TIME + $params['lifetime'] : 0;
+
+  $cookie_name_prefix = variable_get('esi_cookie_name_prefix', ESI_DEFAULT_COOKIE_NAME_PREFIX);
+
   foreach ($contexts as $key => $context) {
     // Each context has the session key appended to it, to ensure site-
     // specifity.
     $cookie_data[] = array(
-      'name'     => $key,
+      'name'     => $cookie_name_prefix . $key,
       'value'    => $context,
       'expire'   => $expire,
       'path'     => $params['path'],
@@ -389,12 +397,16 @@ function esi__get_cookie_data($account) {
     'httponly' => $params['httponly'],
   );
 
-  // The default user-session cookie uses the session_name.
-  // Append the session-name to all ESI cookies (if desired).
-  $sessify = variable_get('esi_harden_cookie_key', ESI_DEFAULT_CONTEXT_COOKIES_HARDENING);
-  $session_name = $sessify ? session_name() : '';
-  foreach ($cookie_data as &$cookie) {
-    $cookie['name'] .= $session_name;
+  // The ESI cookie names are predictable. They can be made less predictable,
+  // by using the same session-naming convention as core - adding a hash of the
+  // domain name as a suffix.
+  // See drupal_settings_initialize() where the session name is initialized.
+  $harden_esi_cookies = variable_get('esi_harden_cookie_key', ESI_DEFAULT_CONTEXT_COOKIES_HARDENING);
+  if ($harden_esi_cookies) {
+    $session_name = '_' . session_name();
+    foreach ($cookie_data as &$cookie) {
+      $cookie['name'] .= $session_name;
+    }
   }
 
   return $cookie_data;
@@ -414,10 +426,12 @@ function esi__get_user_contexts($account = NULL) {
  * Implements hook_esi_context().
  */
 function esi_esi_context($account) {
-  // Add a role context.
   global $user;
   return array(
-    'R' => implode(',', array_keys($user->roles)),
+    // Add a role context.
+    'ROLE' => implode(',', array_keys($user->roles)),
+    // Add a user context (to match the primary session key).
+    'USER' => session_id(),
   );
 }
 
