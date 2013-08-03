@@ -281,6 +281,10 @@ function esi_esi_mode() {
       'title' => 'SSI tag',
       'render' => 'esi_ssi_tag',
     ),
+    'ssi_remote' => array(
+      'title' => 'SSI remote tag',
+      'render' => 'esi_ssi_remote_tag',
+    ),
   );
 }
 
@@ -500,7 +504,12 @@ function esi_ssi_tag($url) {
   return '<!--# include virtual="' . $url . '" -->';
 }
 
-
+/**
+ * Render a remote SSI tag (as used by mod_publisher).
+ */
+function esi_ssi_remote_tag($url) {
+  return '<!--# include url="' . $url . '" -->';
+}
 
 
 /**
