@@ -48,6 +48,9 @@ define('ESI_DEFAULT_TTL', 300);
 // Default render mode is to use an ESI tag.
 define('ESI_DEFAULT_RENDER_MODE', 'esi');
 
+// Enable the AJAX fallback by default.
+define('ESI_DEFAULT_AJAX_FALLBACK', TRUE);
+
 // Default interval for rotating the seed key: change each day by default.
 define('ESI_SEED_ROTATION_INTERVAL', 86400);
 
@@ -105,6 +108,17 @@ function esi_theme() {
   );
 }
 
+/**
+ * Implements hook_init().
+ */
+function esi_init() {
+  // Add the AJAX fallback handler, if it's enabled.
+  if (variable_get('esi_ajax_fallback', ESI_DEFAULT_AJAX_FALLBACK)) {
+    $path = drupal_get_path('module', 'esi');
+    drupal_add_js("{$path}/js/esi.js");
+    drupal_add_js("{$path}/js/jquery.esi.js");
+  }
+}
 
 /**
  * Implements hook_boot().
