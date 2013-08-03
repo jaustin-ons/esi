@@ -51,6 +51,9 @@ define('ESI_DEFAULT_RENDER_MODE', 'esi');
 // Enable the AJAX fallback by default.
 define('ESI_DEFAULT_AJAX_FALLBACK', TRUE);
 
+// By default, do not alter the ESI URLs when AJAX rendering.
+define('ESI_DEFAULT_AJAX_FALLBACK_CONTEXTUALIZE_URL', FALSE);
+
 // Default interval for rotating the seed key: change each day by default.
 define('ESI_SEED_ROTATION_INTERVAL', 86400);
 
@@ -117,6 +120,21 @@ function esi_init() {
     $path = drupal_get_path('module', 'esi');
     drupal_add_js("{$path}/js/esi.js");
     drupal_add_js("{$path}/js/jquery.esi.js");
+
+    // Contextualize the URLs, if required.
+    // Drupal.ESI.contextualize_URLs
+    if (variable_get('esi_ajax_fallback_contextualize_url', ESI_DEFAULT_AJAX_FALLBACK_CONTEXTUALIZE_URL)) {
+      $harden_cookies = variable_get('esi_harden_cookie_key', ESI_DEFAULT_CONTEXT_COOKIES_HARDENING);
+
+      $setting = array(
+        'ESI' => array(
+          'cookie_prefix' => variable_get('esi_cookie_name_prefix', ESI_DEFAULT_COOKIE_NAME_PREFIX),
+          'cookie_suffix' => ($harden_cookies) ? '_' . session_name() : '',
+          'contextualize_URLs' => TRUE,
+        ),
+      );
+      drupal_add_js($setting, 'setting');
+    }
   }
 }
 
@@ -380,6 +398,13 @@ function esi__get_cookie_data($account) {
   $expire = $params['lifetime'] ? REQUEST_TIME + $params['lifetime'] : 0;
 
   $cookie_name_prefix = variable_get('esi_cookie_name_prefix', ESI_DEFAULT_COOKIE_NAME_PREFIX);
+
+  // If support for the AJAX fallback with contextualized URLs is needed, then
+  // the ESI cookies must be accessible to JavaScript.
+  $ajax_with_contextualize_urls = variable_get('esi_ajax_fallback', ESI_DEFAULT_AJAX_FALLBACK) && variable_get('esi_ajax_fallback_contextualize_url', ESI_DEFAULT_AJAX_FALLBACK_CONTEXTUALIZE_URL);
+  if ($ajax_with_contextualize_urls) {
+    $params['httponly'] = FALSE;
+  }
 
   foreach ($contexts as $key => $context) {
     // Each context has the session key appended to it, to ensure site-
