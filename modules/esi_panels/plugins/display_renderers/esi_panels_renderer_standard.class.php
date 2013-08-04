@@ -1,13 +1,18 @@
 <?php
 /**
+ * @file
+ * Replacement for standard editor.
+ */
+
+/**
  * Extend the panels_renderer_standard class, to override render_layout().
  * The standard renderer renders the panes, then immediately renders the
  * regions.
  * We need to catch the panes after they're individually rendered, but before
  * they're bundled together into regions.
  */
-class esi_panels_renderer_esi extends panels_renderer_standard {
-  
+class esi_panels_renderer_standard extends panels_renderer_standard {
+
   /**
    * Prepare the list of panes to be rendered, accounting for visibility/access
    * settings and rendering order.
