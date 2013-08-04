@@ -75,6 +75,36 @@ function esi_panels_esi_component_info() {
 
 /**
  * Implements hook_form_FORM_ID_alter().
+ *
+ * @see panelizer_settings_form().
+ */
+function esi_panels_form_panelizer_settings_form_alter(&$form, &$form_state) {
+  // The 'ESI' panels renderer should automatically replace the 'standard'
+  // panels renderer when there are panes on a panel which are handled by ESI.
+  // It should not be selectable in its own right.
+  unset ($form['pipeline']['#options']['esi']);
+
+  // Attempt to discover the original pipeline, in order to assign the radio
+  // button to the original value.
+  if (isset($form_state['entity'])) {
+    $handler = &$form_state['entity']->panelizer['page_manager'];
+  }
+  elseif (isset($form_state['panelizer'])) {
+    $handler = &$form_state['panelizer'];
+  }
+  else {
+    $handler = NULL;
+  }
+
+  if (isset($handler->extra['original_pipeline'])) {
+    $form['pipeline']['#default_value'] = $handler->extra['original_pipeline'];
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * @see panels_panel_context_edit_settings().
  */
 function esi_panels_form_panels_panel_context_edit_settings_alter(&$form, &$form_state) {
   // The 'ESI' panels renderer should automatically replace the 'standard'
@@ -152,7 +182,7 @@ function esi_panels_ctools_plugin_post_alter(&$plugin, &$info) {
   // panel-context is invoked.  Replace that hook, in order to check for the
   // presence of ESI panes, and switch the rendering pipeline if necessary.
   if ($plugin['name'] == 'panel_context') {
-    // Replace the default 'save' operation - panels_panel_context_save();
+    // @see panels_panel_context_save().
     $plugin['save'] = 'esi_panels__panel_context_save';
   }
 }
@@ -209,6 +239,7 @@ function esi_panels_url($pane, $display) {
 
 /**
  * Save the configuration of a panel page.
+ *
  * @see panels_panel_context_save().
  */
 function esi_panels__panel_context_save(&$handler, $update) {
@@ -226,13 +257,31 @@ function esi_panels__panel_context_save(&$handler, $update) {
   }
 
   if (_esi_panels__display_uses_esi($display)) {
-    // Check for a renderer with the same name, prefixed 'esi_'.
     if ($handler->conf['pipeline'] == 'standard' || $handler->conf['pipeline'] == 'ipe') {
       $handler->conf['original_pipeline'] = $handler->conf['pipeline'];
       $handler->conf['pipeline'] = "esi";
     }
   }
   panels_panel_context_save($handler, $update);
+}
+
+/**
+ * Save the configuration of a panelizer panel page.
+ *
+ * @see panelizer_export_save_callback().
+ */
+function esi_panels__panelizer_export_save_callback(&$object) {
+  // Check if the handler has any panes using ESI as a cache.
+  $display = $object->display;
+  if (_esi_panels__display_uses_esi($display)) {
+    $pipeline = $object->pipeline;
+    if ($pipeline == 'standard' || $pipeline == 'ipe') {
+      $object->extra['original_pipeline'] = $pipeline;
+      $object->pipeline = 'esi';
+    }
+  }
+
+  return panelizer_export_save_callback($object);
 }
 
 /**
