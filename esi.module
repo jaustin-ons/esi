@@ -147,10 +147,10 @@ function esi_boot() {
 
   // ESI will *always* set a cookie in order to determine if cookies need to be
   // resent. That cookie's name will be:
-  // ESI_:                   if the "Harden cookie key" setting is disabled.
-  // ESI_{32-char-MD5-hash}: if the "Harden cookie key" setting is enabled.
+  // ESI_:                    if the "Harden cookie key" setting is disabled.
+  // ESI_{_32-char-MD5-hash}: if the "Harden cookie key" setting is enabled.
   $sessify = variable_get('esi_harden_cookie_key', TRUE);
-  $session_name = $sessify ? session_name() : '';
+  $session_name = $sessify ? '_' . session_name() : '';
 
   // Expect *at least* an "ESI_{$session_name}" cookie.
   // Use this as the basis for refreshing context cookies.
