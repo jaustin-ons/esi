@@ -198,6 +198,18 @@ function esi_panels_url($pane, $display) {
   // Default:                esi/panels_pane/theme:display_id:pane_id
   // With context:           esi/panels_pane/theme:display_id:pane_id/[base64($_GET['q'])]/task_name/context
 
+  // ESI 7.x-3.x uses the URL prefixes:
+  // Default:                esi/panels_pane/theme:display_id:pane_id
+  // With context:           esi/panels_pane/theme:display_id:pane_id/task_name
+  //
+  // All display arguments, and the original page URL (Base64-encoded) are
+  // appended to the URL prefix.
+  //
+  // Examples:
+  // - esi/panels_pane/bartik%3A4%3A9/page-page_user_test/1/dXNlci8xL215X3Rlc3Q%3D
+  // - esi/panels_pane/bartik%3A3%3A8/user_view/2/dXNlci8y
+  // - esi/panels_pane/bartik%3A3%3A8/user_view/1/dXNlci8x
+
   $url = "esi/panels_pane/";
 
   global $theme;
