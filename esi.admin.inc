@@ -60,6 +60,12 @@ function esi_admin_configuration_form() {
     '#description' => t('When handling ESI tags in the browser, the ESI context can be retrieved from the cookie and added to the ESI URL, which allows the content to be cached by downstream proxies.'),
     '#default_value' => variable_get('esi_ajax_fallback_contextualize_url', ESI_DEFAULT_AJAX_FALLBACK_CONTEXTUALIZE_URL),
   );
+  $form['global']['esi_use_absolute_urls'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use absolute ESI URLs'),
+    '#description' => t('Most of the time either absolute or relative URLs would work. However, if you are running Varnish behind a HTTPS proxy, Varnish will ignore absolute URLs beginning with "https://". In that case one must use relative URLs.'),
+    '#default-value' => variable_get('esi_use_absolute_urls', ESI_DEFAULT_USE_ABSOLUTE_URLS),
+  );
 
   $form['context_cookies'] = array(
     '#type' => 'fieldset',

@@ -54,6 +54,9 @@ define('ESI_DEFAULT_AJAX_FALLBACK', TRUE);
 // By default, do not alter the ESI URLs when AJAX rendering.
 define('ESI_DEFAULT_AJAX_FALLBACK_CONTEXTUALIZE_URL', FALSE);
 
+// By default, do not construct absolute URLs for ESI.
+define('ESI_DEFAULT_USE_ABSOLUTE_URLS', FALSE);
+
 // Default interval for rotating the seed key: change each day by default.
 define('ESI_SEED_ROTATION_INTERVAL', 86400);
 

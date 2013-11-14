@@ -100,7 +100,7 @@ function esi_block_block_view_alter(&$data, $block) {
 
   if ($block->module == 'esi_block') {
     // Build a URL which contains all the necessary data.
-    $url = url(esi_block_url($block), array('absolute' => TRUE));
+    $url = url(esi_block_url($block), array('absolute' => variable_get('esi_use_absolute_urls', ESI_DEFAULT_USE_ABSOLUTE_URLS)));
     $data['content'] = array(
       '#type' => 'esi',
       '#url' => $url,
